@@ -28,6 +28,9 @@ def resize_transform(
     h_patches = int(image_size / patch_size)
     w_patches = int((w * image_size) / (h * patch_size))
 
+    # Delete this line, is for test:
+    w_patches = h_patches
+
     img_resized = cv2.resize(img, (w_patches*patch_size, h_patches*patch_size), interpolation=interpolation)
 
     return img_resized
@@ -63,3 +66,19 @@ def tensor_to_image(tensor, mean, std):
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
 
     return img  # RGB format
+
+def collate_fn(batch):
+    """
+    batch: list of tuples (image_tensor, boxes, labels)
+    """
+    # images, boxes, labels = zip(*batch)
+    # # keep targets as a list of dicts (variable-length bboxes)
+    # return images, boxes, labels
+
+    images = [item[0] for item in batch]
+    bboxes = [item[1] for item in batch]
+    labels = [item[2] for item in batch]
+    # stack images into one tensor
+    images = torch.stack(images, dim=0)
+    # keep targets as a list of dicts (variable-length bboxes)
+    return images, bboxes, labels

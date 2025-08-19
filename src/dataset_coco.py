@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 import random
 import os
-from utils import image_to_tensor, resize_transform, tensor_to_image
+from src.utils import image_to_tensor, resize_transform, tensor_to_image
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
@@ -72,12 +72,15 @@ class DatasetCOCO(Dataset):
         for ann in annotations:
             x_bbox, y_bbox, w_bbox, h_bbox = ann['bbox']
             boxes.append([x_bbox/w, y_bbox/h, w_bbox/w, h_bbox/h])
-            labels.append(ann['category_id'])
+            category_id = ann['category_id']
+            category_name = self.coco.loadCats(category_id)[0]['name']
+            label = self.class_names.index(category_name)
+            labels.append(label)
 
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
         labels = torch.tensor(labels, dtype=torch.int64)
         
-        target = {'boxes': boxes, 'labels': labels}
+        #target = {'boxes': boxes, 'labels': labels}
 
         # Augment image
         if random.random() < self.augment_prob:
@@ -86,7 +89,7 @@ class DatasetCOCO(Dataset):
         # Resize image
         image = resize_transform(image, self.img_size, self.patch_size)
 
-        return image_to_tensor(image, self.mean, self.std), target
+        return image_to_tensor(image, self.mean, self.std), boxes, labels
 
     def photometric_augment(self, img,
                         brightness_delta=32,
@@ -139,14 +142,14 @@ class DatasetCOCO(Dataset):
         Args:
             idx (int): Index of the image in the dataset.
         """
-        image_tensor, target = self.__getitem__(idx)
+        image_tensor, boxes, labels = self.__getitem__(idx)
         image = tensor_to_image(image_tensor, self.mean, self.std)
 
         # Get absolute bboxes
         h = image.shape[0]
         w = image.shape[1]
         
-        for bbox in target['boxes']:
+        for bbox in boxes:
             bbox[0] *= w
             bbox[1] *= h
             bbox[2] *= w
@@ -155,11 +158,11 @@ class DatasetCOCO(Dataset):
         fig, ax = plt.subplots(1, figsize=(12, 9))
         ax.imshow(image)
 
-        for box, label in zip(target['boxes'], target['labels']):
+        for box, label in zip(boxes, labels):
             x, y, w, h = box.tolist()
             rect = patches.Rectangle((x, y), w, h, linewidth=2, edgecolor='r', facecolor='none')
             ax.add_patch(rect)
-            category_name = self.coco.loadCats(label.item())[0]['name']
+            category_name = self.class_names[label.item()] #self.coco.loadCats(label.item())[0]['name']
             ax.text(x, y - 10, category_name, color='red', fontsize=10)
 
         plt.axis('off')
@@ -167,7 +170,7 @@ class DatasetCOCO(Dataset):
     
 if __name__ == '__main__':
     COCO_ROOT = '/home/rafa/deep_learning/datasets/COCO'
-    MODE = "train"
+    MODE = "val"
     IMG_SIZE = 768
     PATCH_SIZE = 16
     dataset = DatasetCOCO(COCO_ROOT, MODE, IMG_SIZE, PATCH_SIZE)
