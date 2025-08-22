@@ -128,6 +128,7 @@ class FCOSHead(nn.Module):
 
             cls_out = self.cls_logits(cls_feat)
             reg_out = self.bbox_reg(reg_feat)
+            reg_out = F.softplus(reg_out) 
             ctr_out = self.centerness(reg_feat)
 
             # reg_out is predicted as raw offsets; training code often applies exp/clamp
@@ -162,9 +163,9 @@ if __name__ == '__main__':
 
     from model_backbone import DinoBackbone
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    height = 416
-    width = 416+16*4
-    image = torch.randn(16,3,height, width).to(device)
+    height = 768
+    width = 768
+    image = torch.randn(1,3,height, width).to(device)
     dinov3_dir = "/home/rafa/deep_learning/projects/object_detection_dinov3/dinov3"
     dino_model = torch.hub.load(
         repo_or_dir=dinov3_dir,

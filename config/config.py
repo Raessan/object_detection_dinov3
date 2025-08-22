@@ -1,6 +1,6 @@
 # Dataset variables
 COCO_ROOT = '/home/rafa/deep_learning/datasets/COCO'
-IMG_SIZE = 512
+IMG_SIZE = 800
 PATCH_SIZE = 16
 PROB_AUGMENT_TRAINING = 0.85 # Probability to perform photogrametric augmentation in training
 PROB_AUGMENT_VALID = 0.0 # Probability to perform photogrametric augmentation in validation
@@ -30,17 +30,23 @@ MODEL_TO_EMBED_DIM = {
 N_LAYERS_UNFREEZE = 0
 
 # TRAINING PARAMETERS
-BATCH_SIZE = 32 # Batch size
+BATCH_SIZE = 16 # Batch size
 FOCAL_ALPHA = 0.25
 FOCAL_GAMMA = 2.0
 WEIGHT_REG = 1.0
 WEIGHT_CTR = 1.0
 
-LEARNING_RATE = 0.0001 # Learning rate
+LEARNING_RATE = 0.00001 # Learning rate
+WEIGHT_DECAY = 0.0001
 NUM_EPOCHS = 15 # Number of epochs
 NUM_SAMPLES_PLOT = 6 # Number of samples to plot during training or validation
 
-LOAD_MODEL = False # Whether to load an existing model for training
+LOAD_MODEL = True # Whether to load an existing model for training
 SAVE_MODEL = True # Whether to save the result from the training
-MODEL_PATH_TRAIN_LOAD = '/home/rafa/deep_learning/projects/siam_tracking/results/2025-08-18_23-40-30/model_0.pth' # Path of the model to load
-RESULTS_PATH = '/home/rafa/deep_learning/projects/siam_tracking/results' # Folder where the result will be saved
+MODEL_PATH_TRAIN_LOAD = '/home/rafa/deep_learning/projects/object_detection_dinov3/results/2025-08-22_17-14-53/model_0.pth' # Path of the model to load
+RESULTS_PATH = '/home/rafa/deep_learning/projects/object_detection_dinov3/results' # Folder where the result will be saved
+
+# PARAMETERS FOR INFERENCE
+MODEL_PATH_INFERENCE = '/home/rafa/deep_learning/projects/object_detection_dinov3/results/2025-08-22_17-14-53/model_0.pth' # Path of the model to perform inference
+#IMG_INFERENCE_PATH = '/home/rafa/deep_learning/datasets/COCO/val2017/000000000139.jpg'
+IMG_INFERENCE_PATH = '/home/rafa/deep_learning/datasets/COCO/train2017/000000000009.jpg'

@@ -38,8 +38,8 @@ class DatasetCOCO(Dataset):
         self.coco = COCO(self.path_annotations)
         self.ids = list(sorted(self.coco.imgs.keys()))
         self.augment_prob = augment_prob
-        self.mean = np.array(mean, dtype=np.float32)[None, :, None, None]
-        self.std  = np.array(std, dtype=np.float32)[None, :, None, None]
+        self.mean = np.array(mean, dtype=np.float32)[:, None, None]
+        self.std  = np.array(std, dtype=np.float32)[:, None, None]
 
         cat_ids = self.coco.getCatIds()
         cats = self.coco.loadCats(cat_ids)

@@ -193,7 +193,7 @@ def giou_loss(pred_boxes, target_boxes):
 
 
 def compute_loss(outputs: Dict[str, List[torch.Tensor]], batch_boxes, batch_labels,
-                   image_size, strides=[8,16,32], focal_alpha=0.25, focal_gamma=2.0,
+                   image_size, strides=[16,32,64], focal_alpha=0.25, focal_gamma=2.0,
                    weight_reg=1.0, weight_ctr=1.0):
     """
     Given model outputs (dict of lists per level) and batch GTs, compute
@@ -292,7 +292,7 @@ def compute_loss(outputs: Dict[str, List[torch.Tensor]], batch_boxes, batch_labe
         reg_loss = giou_loss(pred_boxes_xy, tgt_boxes_xy) / num_pos
 
         # Centerness loss (BCE with logits) only where pos
-        ctr_loss = F.binary_cross_entropy_with_logits(all_ctr_preds[pos_idx], all_ctr_tgts[pos_idx]) / num_pos
+        ctr_loss = F.binary_cross_entropy_with_logits(all_ctr_preds[pos_idx], all_ctr_tgts[pos_idx], reduction="sum") / num_pos
     else:
         reg_loss = torch.tensor(0.0, device=device)
         ctr_loss = torch.tensor(0.0, device=device)
