@@ -2,6 +2,7 @@ import torch
 import numpy as np
 import torch.nn.functional as F
 from typing import List, Dict
+import time
 
 def compute_locations(feature: torch.Tensor, stride: int):
     """Return a tensor of shape (H, W, 2) with the center (x,y) coordinates (in pixels)
@@ -17,7 +18,7 @@ def compute_locations(feature: torch.Tensor, stride: int):
 
 
 def create_ground_truth_targets(batch_boxes, batch_labels, image_size, feature_maps, strides,
-                                center_sampling_radius: float = 1.5, num_classes=80):
+                                center_sampling_radius: float = 1.5, num_classes=80, scale_ranges = None):
     """
     Create per-level training targets for an FCOS-style head.
 
@@ -94,6 +95,23 @@ def create_ground_truth_targets(batch_boxes, batch_labels, image_size, feature_m
             dist_x = (lx - cx.unsqueeze(0)).abs()
             dist_y = (ly - cy.unsqueeze(0)).abs()
             center_mask = (dist_x <= radius) & (dist_y <= radius)  # (L, G)
+
+            if scale_ranges:
+                # Compute object size (max side in pixels):
+                gt_w = x2 - x1
+                gt_h = y2 - y1
+                gt_size = torch.max(gt_w, gt_h)  # (G,)
+
+                # Build a bool mask size_mask of shape (1, G) indicating which GTs belong to this level
+                min_s, max_s = scale_ranges[l]
+                size_mask = (gt_size >= min_s) & (gt_size <= max_s)  # (G,)
+                # broadcast to (L, G) and incorporate into is_pos:
+
+                if not size_mask.all():
+                    # set all columns corresponding to invalid GTs to False
+                    inside_box[:, ~size_mask] = False
+                    center_mask[:, ~size_mask] = False
+
 
             is_pos = inside_box & center_mask
 
@@ -194,7 +212,7 @@ def giou_loss(pred_boxes, target_boxes):
 
 def compute_loss(outputs: Dict[str, List[torch.Tensor]], batch_boxes, batch_labels,
                    image_size, strides=[16,32,64], focal_alpha=0.25, focal_gamma=2.0,
-                   weight_reg=1.0, weight_ctr=1.0):
+                   weight_reg=1.0, weight_ctr=1.0, scale_ranges = None):
     """
     Given model outputs (dict of lists per level) and batch GTs, compute
     classification (focal), regression (GIoU), and centerness losses.
@@ -214,7 +232,7 @@ def compute_loss(outputs: Dict[str, List[torch.Tensor]], batch_boxes, batch_labe
     # Create targets
     cls_targets, reg_targets, ctr_targets, pos_masks = create_ground_truth_targets(
         batch_boxes, batch_labels, image_size,
-        [t for t in outputs['cls']], strides, num_classes=outputs['cls'][0].shape[1])
+        [t for t in outputs['cls']], strides, num_classes=outputs['cls'][0].shape[1], scale_ranges=scale_ranges)
 
     # Flatten predictions and targets across levels for easier loss computation
     flatten_logits = []

@@ -3,6 +3,7 @@ matplotlib
 opencv-python
 notebook
 tqdm
+pycocotools
 # Install torch separately to adapt to your CUDA device. e.g.: pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu129
 # torch
 # torchvision

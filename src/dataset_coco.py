@@ -30,11 +30,8 @@ class DatasetCOCO(Dataset):
         elif self.mode == "val":
             self.data_dir = os.path.join(self.root_dir, "val2017")
             self.path_annotations = os.path.join(self.root_dir, "annotations", "instances_val2017.json")
-        elif self.mode == "test":
-            self.data_dir = os.path.join(self.root_dir, "test2017")
-            self.path_annotations = os.path.join(self.root_dir, "annotations", "instances_test2017.json")
         else:
-            raise Exception("the mode must be either train, val or test")
+            raise Exception("The mode must be either train or val!")
         self.coco = COCO(self.path_annotations)
         self.ids = list(sorted(self.coco.imgs.keys()))
         self.augment_prob = augment_prob
@@ -173,6 +170,8 @@ if __name__ == '__main__':
     MODE = "val"
     IMG_SIZE = 768
     PATCH_SIZE = 16
-    dataset = DatasetCOCO(COCO_ROOT, MODE, IMG_SIZE, PATCH_SIZE)
+    AUGMENT_PROB=1.0
+    dataset = DatasetCOCO(COCO_ROOT, MODE, IMG_SIZE, PATCH_SIZE, AUGMENT_PROB)
     data = dataset.__getitem__(0)
     dataset.visualize(0)
+    print(dataset.class_names)

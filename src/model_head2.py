@@ -48,6 +48,8 @@ class LightFPN(nn.Module):
         self.smooth4 = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
         self.smooth5 = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
 
+        self.p2_upsample = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
+
         # initialization
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -72,8 +74,13 @@ class LightFPN(nn.Module):
 
         p5_td = self.smooth5(p5)
 
-        # Return in increasing stride order like common detectors: [P3, P4, P5]
-        return [p3_td, p4_td, p5_td]
+        # --- P2: upsample p3_td to create higher-res feature (stride S/2) ---
+        # Note: this upsamples, so P2 has twice H/W of P3
+        p2 = F.interpolate(p3_td, scale_factor=2.0, mode='nearest')
+        p2 = self.p2_upsample(p2)   # refine after upsampling
+
+        # Return in increasing stride order: [P2, P3, P4, P5]
+        return [p2, p3_td, p4_td, p5_td]
 
 
 # ----------------- FCOS-style head -----------------
@@ -162,7 +169,7 @@ class DinoFCOSHead(nn.Module):
 if __name__ == '__main__':
 
     from model_backbone import DinoBackbone
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = "cpu" #"cuda" if torch.cuda.is_available() else "cpu"
     height = 800
     width = 800
     image = torch.randn(1,3,height, width).to(device)

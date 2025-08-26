@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from src.model_head import DinoFCOSHead
+from src.model_head2 import DinoFCOSHead
 from src.model_backbone import DinoBackbone
 from src.dataset_coco import DatasetCOCO
 from src.utils import resize_transform, image_to_tensor, tensor_to_image, decode_outputs, plot_detections, build_outputs_from_targets
@@ -20,9 +20,10 @@ DINOV3_DIR = cfg.DINOV3_DIR
 DINO_MODEL = cfg.DINO_MODEL
 MODEL_TO_NUM_LAYERS = cfg.MODEL_TO_NUM_LAYERS
 MODEL_TO_EMBED_DIM = cfg.MODEL_TO_EMBED_DIM
-MODEL_PATH_INFERENCE = cfg.MODEL_PATH_INFERENCE
+MODEL_PATH_INFERENCE = '/home/rafa/deep_learning/projects/object_detection_dinov3/results/2025-08-23_03-49-09/model_1.pth'
 IMG_INFERENCE_PATH = cfg.IMG_INFERENCE_PATH
 NUM_CLASSES = 80
+SCALE_RANGES = None #[(0,200), (200,400), (400,600), (600,800)]
 
 # Get class names from COCO
 val_set = DatasetCOCO(COCO_ROOT, "val", IMG_SIZE, PATCH_SIZE, 0.0)
@@ -38,7 +39,7 @@ dino_model = torch.hub.load(
 dino_backbone = DinoBackbone(dino_model, n_layers_dino).to(device)
 
 embed_dim = MODEL_TO_EMBED_DIM[DINO_MODEL]
-model_head = DinoFCOSHead(backbone_out_channels=embed_dim, fpn_channels=FPN_CH, num_classes=NUM_CLASSES).to(device)
+model_head = DinoFCOSHead(backbone_out_channels=embed_dim, fpn_channels=FPN_CH, num_classes=NUM_CLASSES, num_convs=5).to(device)
 model_head.load_state_dict(torch.load(MODEL_PATH_INFERENCE))
 
 data = val_set.__getitem__(0)
@@ -72,18 +73,18 @@ print(strides)
 
 # Probar a pasar el boxes por el loss y ver si es 0
 cls_targets, reg_targets, ctr_targets, pos_masks = create_ground_truth_targets(boxes_simul, labels, image.shape[2:], 
-                                                                               [t for t in outputs['cls']], strides)
+                                                                               [t for t in outputs['cls']], strides, scale_ranges=SCALE_RANGES)
 outputs_gt_logits = build_outputs_from_targets(cls_targets, reg_targets, ctr_targets, eps=1e-4)
 loss_gt = compute_loss(outputs_gt_logits, boxes, labels,
                    image.shape[2:], strides=strides, focal_alpha=0.25, focal_gamma=2.0,
-                   weight_reg=1.0, weight_ctr=1.0)
+                   weight_reg=1.0, weight_ctr=1.0, scale_ranges=SCALE_RANGES)
 print("Cls loss gt:", loss_gt[1])
 print("Reg loss gt:", loss_gt[2])
 print("Ctr loss gt:", loss_gt[3])
 
 loss_pred = compute_loss(outputs, boxes, labels,
                    image.shape[2:], strides=strides, focal_alpha=0.25, focal_gamma=2.0,
-                   weight_reg=1.0, weight_ctr=1.0)
+                   weight_reg=1.0, weight_ctr=1.0, scale_ranges=SCALE_RANGES)
 print("Cls loss pred:", loss_pred[1])
 print("Reg loss pred:", loss_pred[2])
 print("Ctr loss pred:", loss_pred[3])

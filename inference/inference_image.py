@@ -17,6 +17,7 @@ IMG_STD = np.array(cfg.IMG_STD, dtype=np.float32)[:, None, None]
 FPN_CH = cfg.FPN_CH
 DINOV3_DIR = cfg.DINOV3_DIR
 DINO_MODEL = cfg.DINO_MODEL
+DINO_WEIGHTS = cfg.DINO_WEIGHTS
 MODEL_TO_NUM_LAYERS = cfg.MODEL_TO_NUM_LAYERS
 MODEL_TO_EMBED_DIM = cfg.MODEL_TO_EMBED_DIM
 MODEL_PATH_INFERENCE = cfg.MODEL_PATH_INFERENCE
@@ -32,7 +33,8 @@ n_layers_dino = MODEL_TO_NUM_LAYERS[DINO_MODEL]
 dino_model = torch.hub.load(
         repo_or_dir=DINOV3_DIR,
         model=DINO_MODEL,
-        source="local"
+        source="local",
+        weights=DINO_WEIGHTS
 )
 dino_backbone = DinoBackbone(dino_model, n_layers_dino).to(device)
 

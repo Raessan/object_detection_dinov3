@@ -20,40 +20,31 @@ class ConvGNReLU(nn.Module):
         return self.act(self.gn(self.conv(x)))
     
 # ----------------- Lightweight FPN -----------------
+# assume ConvGNReLU already defined above
 class LightFPN(nn.Module):
-    """
-    Builds a 3-level FPN (P3, P4, P5) from a single input feature map (from ViT/DINO).
-    The design:
-      - proj: 1x1 projection from backbone dim -> C
-      - P3 = proj(x)
-      - P4 = stride-2 conv(P3)
-      - P5 = stride-2 conv(P4)
-      - top-down upsample and add with 3x3 smoothers
-
-    This keeps things simple and lightweight when the backbone is a ViT that returns
-    a single spatial feature map.
-    """
     def __init__(self, in_channels: int, out_channels: int = 192):
         super().__init__()
         self.out_channels = out_channels
-        # 1x1 projection
-        self.proj = nn.Conv2d(in_channels, out_channels, kernel_size=1)
+        # 1x1 projection -> use ConvGNReLU (1x1 conv with GN+ReLU)
+        self.proj = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, kernel_size=1, bias=False),
+            nn.GroupNorm(min(32, out_channels), out_channels),
+            nn.ReLU(inplace=True)
+        )
 
         # downsample convs to create P4 and P5
-        self.down1 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=2, padding=1)
-        self.down2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, stride=2, padding=1)
+        self.down1 = ConvGNReLU(out_channels, out_channels, kernel_size=3, stride=2, padding=1)
+        self.down2 = ConvGNReLU(out_channels, out_channels, kernel_size=3, stride=2, padding=1)
 
-        # smoothers after top-down
-        self.smooth3 = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
-        self.smooth4 = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
-        self.smooth5 = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
+        # smoothers after top-down: use ConvGNReLU (3x3 conv + GN + ReLU)
+        self.smooth3 = ConvGNReLU(out_channels, out_channels, kernel_size=3, padding=1)
+        self.smooth4 = ConvGNReLU(out_channels, out_channels, kernel_size=3, padding=1)
+        self.smooth5 = ConvGNReLU(out_channels, out_channels, kernel_size=3, padding=1)
 
-        # initialization
-        for m in self.modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-                if m.bias is not None:
-                    nn.init.zeros_(m.bias)
+        # if you have P2: keep symmetric smoother
+        # self.smooth2 = ConvGNReLU(out_channels, out_channels, kernel_size=3, padding=1)
+
+        # init (ConvGNReLU already init convs by default if you want)
 
     def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
         # x: (B, C_in, H, W)
@@ -85,7 +76,7 @@ class FCOSHead(nn.Module):
     - num_convs: depth of the conv towers (4 in the canonical design)
     """
     def __init__(self, in_channels: int = 192, num_classes: int = 80, num_convs: int = 4,
-                 prior_prob: float = 0.01):
+                 prior_prob: float = 0.01, num_levels: int = 3):  # set num_levels to len(FPN)
         super().__init__()
         self.num_classes = num_classes
         self.in_channels = in_channels
@@ -98,40 +89,34 @@ class FCOSHead(nn.Module):
         self.cls_tower = nn.Sequential(*cls_tower)
         self.reg_tower = nn.Sequential(*reg_tower)
 
-        # final prediction convs
+        # final convs
         self.cls_logits = nn.Conv2d(in_channels, num_classes, kernel_size=3, padding=1)
         self.bbox_reg = nn.Conv2d(in_channels, 4, kernel_size=3, padding=1)
         self.centerness = nn.Conv2d(in_channels, 1, kernel_size=3, padding=1)
 
+        # learnable scale per level (so output magnitude per P-level can adapt)
+        self.scales = nn.ParameterList([nn.Parameter(torch.tensor(1.0)) for _ in range(num_levels)])
+
         # init bias for focal loss (prior)
         nn.init.constant_(self.cls_logits.bias, -torch.log(torch.tensor((1 - prior_prob) / prior_prob)))
-        # small init for heads
         for l in [self.bbox_reg, self.centerness]:
             nn.init.normal_(l.weight, std=0.001)
             if l.bias is not None:
                 nn.init.zeros_(l.bias)
 
     def forward(self, features: List[torch.Tensor]) -> Dict[str, List[torch.Tensor]]:
-        """
-        features: list of feature maps [P3, P4, P5], each (B, C, H_i, W_i)
-        returns dict with keys: 'cls', 'reg', 'ctr' each a list of tensors per level
-        cls logits: (B, num_classes, H_i, W_i)
-        reg: (B, 4, H_i, W_i)
-        ctr: (B, 1, H_i, W_i)
-        """
-        cls_outputs = []
-        reg_outputs = []
-        ctr_outputs = []
-        for f in features:
+        cls_outputs, reg_outputs, ctr_outputs = [], [], []
+        for l, f in enumerate(features):
             cls_feat = self.cls_tower(f)
             reg_feat = self.reg_tower(f)
 
             cls_out = self.cls_logits(cls_feat)
-            reg_out = self.bbox_reg(reg_feat)
-            reg_out = F.softplus(reg_out) 
+            reg_raw = self.bbox_reg(reg_feat)  # raw values
+
+            reg_out = F.softplus(reg_raw) * self.scales[l]
+
             ctr_out = self.centerness(reg_feat)
 
-            # reg_out is predicted as raw offsets; training code often applies exp/clamp
             cls_outputs.append(cls_out)
             reg_outputs.append(reg_out)
             ctr_outputs.append(ctr_out)
