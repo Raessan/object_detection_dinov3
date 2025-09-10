@@ -38,19 +38,18 @@ FOCAL_GAMMA = 2.0
 WEIGHT_REG = 1.0
 WEIGHT_CTR = 1.0
 
-LEARNING_RATE = 0.000005 # Learning rate
+LEARNING_RATE = 0.0001 # Learning rate
 WEIGHT_DECAY = 0.0001
 NUM_EPOCHS = 15 # Number of epochs
 NUM_SAMPLES_PLOT = 6 # Number of samples to plot during training or validation
 
-LOAD_MODEL = True # Whether to load an existing model for training
+LOAD_MODEL = False # Whether to load an existing model for training
 SAVE_MODEL = True # Whether to save the result from the training
-MODEL_PATH_TRAIN_LOAD = '/home/rafa/deep_learning/projects/object_detection_dinov3/results/2025-08-26_22-52-57/model_14.pth' # Path of the model to load
+MODEL_PATH_TRAIN_LOAD = '/home/rafa/deep_learning/projects/object_detection_dinov3/results/2025-08-26_22-52-57/2025-08-27_20-28-53/model_12.pth' # Path of the model to load
 RESULTS_PATH = '/home/rafa/deep_learning/projects/object_detection_dinov3/results/2025-08-26_22-52-57' # Folder where the result will be saved
 
 # PARAMETERS FOR INFERENCE
-MODEL_PATH_INFERENCE = '/home/rafa/deep_learning/projects/object_detection_dinov3/results/2025-08-22_21-09-15/model_2.pth' # Path of the model to perform inference
-#MODEL_PATH_INFERENCE = '/home/rafa/deep_learning/projects/object_detection_dinov3/results/2025-08-23_03-49-09/model_1.pth' # Path of the model to perform inference
-
+MODEL_PATH_INFERENCE = '/home/rafa/deep_learning/projects/object_detection_dinov3/results/2025-08-26_22-52-57/2025-08-27_20-28-53/model_12.pth' # Path of the model to perform inference
 IMG_INFERENCE_PATH = '/home/rafa/deep_learning/datasets/COCO/val2017/000000000139.jpg'
-#IMG_INFERENCE_PATH = '/home/rafa/deep_learning/datasets/COCO/train2017/000000000009.jpg'
+SCORE_THRESH = 0.2
+NMS_THRESH = 0.6

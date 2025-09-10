@@ -3,7 +3,7 @@ import numpy as np
 from src.model_head import DinoFCOSHead
 from src.model_backbone import DinoBackbone
 from src.dataset_coco import DatasetCOCO
-from src.utils import resize_transform, image_to_tensor, tensor_to_image, decode_outputs, plot_detections
+from src.utils import resize_transform, image_to_tensor, tensor_to_image, decode_outputs, plot_detections, detection_inference
 import config.config as cfg
 import cv2
 import sys
@@ -22,7 +22,8 @@ MODEL_TO_NUM_LAYERS = cfg.MODEL_TO_NUM_LAYERS
 MODEL_TO_EMBED_DIM = cfg.MODEL_TO_EMBED_DIM
 MODEL_PATH_INFERENCE = cfg.MODEL_PATH_INFERENCE
 IMG_INFERENCE_PATH = cfg.IMG_INFERENCE_PATH
-NUM_CLASSES = 80
+SCORE_THRESH = cfg.SCORE_THRESH
+NMS_THRESH = cfg.NMS_THRESH
 
 # Get class names from COCO
 val_set = DatasetCOCO(COCO_ROOT, "val", IMG_SIZE, PATCH_SIZE)
@@ -39,7 +40,7 @@ dino_model = torch.hub.load(
 dino_backbone = DinoBackbone(dino_model, n_layers_dino).to(device)
 
 embed_dim = MODEL_TO_EMBED_DIM[DINO_MODEL]
-model_head = DinoFCOSHead(backbone_out_channels=embed_dim, fpn_channels=FPN_CH, num_classes=NUM_CLASSES).to(device)
+model_head = DinoFCOSHead(backbone_out_channels=embed_dim, fpn_channels=FPN_CH, num_classes=len(val_set.class_names)).to(device)
 model_head.load_state_dict(torch.load(MODEL_PATH_INFERENCE))
 
 image = cv2.imread(IMG_INFERENCE_PATH)
@@ -54,12 +55,13 @@ model_head.eval()
 
 with torch.no_grad():
     feat = dino_backbone(image_tensor)
-    outputs = model_head(feat)
+    init = time.time()
+    n_inference = 1000
+    for i in range(n_inference):
+        boxes, scores, labels = detection_inference(model_head, feat, (IMG_SIZE, IMG_SIZE), score_thresh=SCORE_THRESH, nms_thresh=NMS_THRESH)
+    end = time.time()
+    print("time per sample: ", (end-init)*1000/n_inference)
 
-first_stride = IMG_SIZE / outputs['cls'][0].shape[2]
-strides = [first_stride, first_stride*2, first_stride*4]
-
-boxes, scores, labels = decode_outputs(outputs, image_tensor.shape[2:], strides, score_thresh=0.2, nms_thresh = 0.6)
 plot_detections(image, boxes.cpu(), scores.cpu(), labels.cpu(), val_set.class_names)
 print("End of inference")
 

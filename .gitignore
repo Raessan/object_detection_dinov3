@@ -8,4 +8,6 @@ build/
 
 *.egg-info/
 
+# Other folders for testing
 test_data/
+aux/
