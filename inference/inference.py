@@ -3,7 +3,8 @@ import numpy as np
 from src.model_head import DinoFCOSHead
 from src.model_backbone import DinoBackbone
 from src.dataset_coco import DatasetCOCO
-from src.utils import resize_transform, image_to_tensor, tensor_to_image, decode_outputs, plot_detections, detection_inference
+from src.common import resize_transform, image_to_tensor
+from src.utils import  plot_detections, detection_inference
 import config.config as cfg
 import cv2
 import sys

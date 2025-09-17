@@ -45,11 +45,11 @@ NUM_SAMPLES_PLOT = 6 # Number of samples to plot during training or validation
 
 LOAD_MODEL = False # Whether to load an existing model for training
 SAVE_MODEL = True # Whether to save the result from the training
-MODEL_PATH_TRAIN_LOAD = '/home/rafa/deep_learning/projects/object_detection_dinov3/results/2025-08-26_22-52-57/2025-08-27_20-28-53/model_12.pth' # Path of the model to load
-RESULTS_PATH = '/home/rafa/deep_learning/projects/object_detection_dinov3/results/2025-08-26_22-52-57' # Folder where the result will be saved
+MODEL_PATH_TRAIN_LOAD = '/home/rafa/deep_learning/projects/object_detection_dinov3/results/2025-08-26_22-52-57/2025-08-27_20-28-53/model_13.pth' # Path of the model to load
+RESULTS_PATH = '/home/rafa/deep_learning/projects/object_detection_dinov3/results' # Folder where the result will be saved
 
 # PARAMETERS FOR INFERENCE
-MODEL_PATH_INFERENCE = '/home/rafa/deep_learning/projects/object_detection_dinov3/results/2025-08-26_22-52-57/2025-08-27_20-28-53/model_12.pth' # Path of the model to perform inference
+MODEL_PATH_INFERENCE = '/home/rafa/deep_learning/projects/object_detection_dinov3/results/2025-08-26_22-52-57/2025-08-27_20-28-53/model_13.pth' # Path of the model to perform inference
 IMG_INFERENCE_PATH = '/home/rafa/deep_learning/datasets/COCO/val2017/000000000139.jpg'
 SCORE_THRESH = 0.2
 NMS_THRESH = 0.6

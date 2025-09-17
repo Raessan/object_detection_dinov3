@@ -20,8 +20,19 @@ class ConvGNReLU(nn.Module):
         return self.act(self.gn(self.conv(x)))
     
 # ----------------- Lightweight FPN -----------------
-# assume ConvGNReLU already defined above
 class LightFPN(nn.Module):
+    """
+    Builds a 3-level FPN (P3, P4, P5) from a single input feature map (from ViT/DINO).
+    The design:
+      - proj: 1x1 projection from backbone dim -> C
+      - P3 = proj(x)
+      - P4 = stride-2 conv(P3)
+      - P5 = stride-2 conv(P4)
+      - top-down upsample and add with 3x3 smoothers
+
+    This keeps things simple and lightweight when the backbone is a ViT that returns
+    a single spatial feature map.
+    """
     def __init__(self, in_channels: int, out_channels: int = 192):
         super().__init__()
         self.out_channels = out_channels
@@ -40,11 +51,6 @@ class LightFPN(nn.Module):
         self.smooth3 = ConvGNReLU(out_channels, out_channels, kernel_size=3, padding=1)
         self.smooth4 = ConvGNReLU(out_channels, out_channels, kernel_size=3, padding=1)
         self.smooth5 = ConvGNReLU(out_channels, out_channels, kernel_size=3, padding=1)
-
-        # if you have P2: keep symmetric smoother
-        # self.smooth2 = ConvGNReLU(out_channels, out_channels, kernel_size=3, padding=1)
-
-        # init (ConvGNReLU already init convs by default if you want)
 
     def forward(self, x: torch.Tensor) -> List[torch.Tensor]:
         # x: (B, C_in, H, W)
@@ -105,6 +111,13 @@ class FCOSHead(nn.Module):
                 nn.init.zeros_(l.bias)
 
     def forward(self, features: List[torch.Tensor]) -> Dict[str, List[torch.Tensor]]:
+        """
+        features: list of feature maps [P3, P4, P5], each (B, C, H_i, W_i)
+        returns dict with keys: 'cls', 'reg', 'ctr' each a list of tensors per level
+        cls logits: (B, num_classes, H_i, W_i)
+        reg: (B, 4, H_i, W_i)
+        ctr: (B, 1, H_i, W_i)
+        """
         cls_outputs, reg_outputs, ctr_outputs = [], [], []
         for l, f in enumerate(features):
             cls_feat = self.cls_tower(f)

@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 import random
 import os
-from src.utils import image_to_tensor, resize_transform, tensor_to_image
+from src.common import image_to_tensor, resize_transform, tensor_to_image
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
@@ -41,7 +41,7 @@ class DatasetCOCO(Dataset):
         cat_ids = self.coco.getCatIds()
         cats = self.coco.loadCats(cat_ids)
         self.class_names = [cat['name'] for cat in cats]
-        #print("COCO classes:", self.class_names)
+
         print("Total number of classes:", len(self.class_names))
 
         random.seed(42)
@@ -168,7 +168,7 @@ class DatasetCOCO(Dataset):
 if __name__ == '__main__':
     COCO_ROOT = '/home/rafa/deep_learning/datasets/COCO'
     MODE = "val"
-    IMG_SIZE = 768
+    IMG_SIZE = 640
     PATCH_SIZE = 16
     AUGMENT_PROB=1.0
     dataset = DatasetCOCO(COCO_ROOT, MODE, IMG_SIZE, PATCH_SIZE, AUGMENT_PROB)

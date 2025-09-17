@@ -329,7 +329,7 @@ if __name__ == '__main__':
 
     COCO_ROOT = '/home/rafa/deep_learning/datasets/COCO'
     MODE = "val"
-    IMG_SIZE = 416
+    IMG_SIZE = 640
     PATCH_SIZE = 16
     DINOV3_DIR = "/home/rafa/deep_learning/projects/object_detection_dinov3/dinov3"
     N_LAYERS_DINO = 12
