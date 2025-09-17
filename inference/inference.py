@@ -3,7 +3,7 @@ import numpy as np
 from src.model_head import DinoFCOSHead
 from src.model_backbone import DinoBackbone
 from src.dataset_coco import DatasetCOCO
-from src.common import resize_transform, image_to_tensor
+from src.common import image_to_tensor
 from src.utils import  plot_detections, detection_inference
 import config.config as cfg
 import cv2
@@ -47,7 +47,7 @@ model_head.load_state_dict(torch.load(MODEL_PATH_INFERENCE))
 image = cv2.imread(IMG_INFERENCE_PATH)
 image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-image = resize_transform(image, IMG_SIZE, PATCH_SIZE)
+image = cv2.resize(image, (IMG_SIZE, IMG_SIZE), interpolation=cv2.INTER_LINEAR)
 image_tensor = image_to_tensor(image, IMG_MEAN, IMG_STD).unsqueeze(0).to(device)
 
 # Inference

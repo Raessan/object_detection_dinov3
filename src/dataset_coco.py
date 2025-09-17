@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 import random
 import os
-from src.common import image_to_tensor, resize_transform, tensor_to_image
+from src.common import image_to_tensor, tensor_to_image
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
@@ -84,7 +84,7 @@ class DatasetCOCO(Dataset):
             image = self.photometric_augment(image)
 
         # Resize image
-        image = resize_transform(image, self.img_size, self.patch_size)
+        image = cv2.resize(image, (IMG_SIZE, IMG_SIZE), interpolation=cv2.INTER_LINEAR)
 
         return image_to_tensor(image, self.mean, self.std), boxes, labels
 
