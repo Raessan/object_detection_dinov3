@@ -77,14 +77,13 @@ class DatasetCOCO(Dataset):
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
         labels = torch.tensor(labels, dtype=torch.int64)
         
-        #target = {'boxes': boxes, 'labels': labels}
 
         # Augment image
         if random.random() < self.augment_prob:
             image = self.photometric_augment(image)
 
         # Resize image
-        image = cv2.resize(image, (IMG_SIZE, IMG_SIZE), interpolation=cv2.INTER_LINEAR)
+        image = cv2.resize(image, (self.img_size, self.img_size), interpolation=cv2.INTER_LINEAR)
 
         return image_to_tensor(image, self.mean, self.std), boxes, labels
 
