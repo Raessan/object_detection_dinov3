@@ -1,6 +1,7 @@
 .ipynb_checkpoints/
 __pycache__/
 results/
+dinov3_weights/
 .vscode/
 
 build/

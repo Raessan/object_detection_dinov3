@@ -316,7 +316,7 @@ def compute_loss(outputs: Dict[str, List[torch.Tensor]], batch_boxes, batch_labe
         ctr_loss = torch.tensor(0.0, device=device)
 
     total = cls_loss + reg_loss*weight_reg + ctr_loss*weight_ctr
-    return total, cls_loss, reg_loss, ctr_loss #{'cls': cls_loss, 'reg': reg_loss, 'ctr': ctr_loss, 'total': total}
+    return total, cls_loss, reg_loss, ctr_loss
 
 
 
