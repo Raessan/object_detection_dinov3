@@ -36,6 +36,8 @@ pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu12
 
 Finally, we provide weights for the lightweight heads developed by us in the `weights` folder, but the DINOv3 backbone weights should be requested and obtained from their [repo](https://github.com/facebookresearch/dinov3). Its default placement is in `dinov3_weights` folder. The presented head has been trained using the `vits16plus` model from DINOv3 as a backbone.
 
+Training also requires the [COCO dataset](https://cocodataset.org/) to be installed on disk.
+
 ## Model and loss function
 
 This repository implements a lightweight FCOS-style object detection head that can be attached to the [DINOv3](https://github.com/facebookresearch/dinov3) backbone (or any ViT producing a single spatial feature map). The design has three main components:
@@ -98,7 +100,7 @@ There are three main folders and files that the user should use:
 
 `config/config.py`: This file allows the user to configure the model, loss, training step or inference step. The parameters are described in the file.
 
-`train/train_detector.ipynb`: Jupyter notebook for training the detector.
+`train/train_detector.ipynb`: Jupyter notebook for training the detector. It can load and/or save checkpoints depending on the configuration in `config.py`.
 
 `inference/inference.py`: Script for running inference with a trained model on new images.
 
@@ -136,6 +138,8 @@ Any modification or extension of this repository should maintain these files and
 ## References
 
 - [Oriane Siméoni, Huy V. Vo, Maximilian Seitzer, Federico Baldassarre, Maxime Oquab, Cijo Jose, Vasil Khalidov, Marc Szafraniec, Seungeun Yi, Michaël Ramamonjisoa, Francisco Massa, Daniel Haziza, Luca Wehrstedt, Jianyuan Wang, Timothée Darcet, Théo Moutakanni, Leonel Sentana, Claire Roberts, Andrea Vedaldi, Jamie Tolan, John Brandt, Camille Couprie, Julien Mairal, Hervé Jégou, Patrick Labatut, Piotr Bojanowski (2025). Dinov3. *arXiv preprint arXiv:2508.10104.*](https://github.com/facebookresearch/dinov3)
+
+- [Tsung-Yi Lin, Michael Maire, Serge Belongie, Lubomir Bourdev, Ross Girshick, James Hays, Pietro Perona, Deva Ramanan, C. Lawrence Zitnick, Piotr Dollár (2014). Microsoft COCO: Common Objects in Context. *European conference on computer vision*](https://cocodataset.org)
 
 - [Zhi Tian, Chunhua Shen, Hao Chen, Tong He (2019). FCOS: Fully Convolutional One-Stage Object Detection. *IEEE/CVF International Conference on Computer Vision (ICCV)*](https://ieeexplore.ieee.org/document/9010746)
 
