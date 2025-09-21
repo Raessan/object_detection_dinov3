@@ -1,4 +1,4 @@
-# object_detection_dinov3: Lightweight head for object detection using DINOv3 as backbone
+# Lightweight head for object detection using DINOv3 as backbone
 
 This repository provides a lightweight object detection head designed to run on top of Meta’s [DINOv3](https://github.com/facebookresearch/dinov3) backbone. The model combines a simple feature pyramid network (LightFPN) with an FCOS-style anchor-free detection head, enabling efficient detection on DINOv3 features without redundant computation. It has been trained using the [COCO dataset](https://cocodataset.org/).
 
