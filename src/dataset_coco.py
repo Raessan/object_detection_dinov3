@@ -175,3 +175,7 @@ if __name__ == '__main__':
     data = dataset.__getitem__(0)
     dataset.visualize(0)
     print(dataset.class_names)
+
+    # Save class names
+    with open("src/class_names.txt", "w") as f:
+        f.write("\n".join(dataset.class_names))

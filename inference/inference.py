@@ -25,9 +25,11 @@ MODEL_PATH_INFERENCE = cfg.MODEL_PATH_INFERENCE
 IMG_INFERENCE_PATH = cfg.IMG_INFERENCE_PATH
 SCORE_THRESH = cfg.SCORE_THRESH
 NMS_THRESH = cfg.NMS_THRESH
+CLASS_NAMES_PATH = cfg.CLASS_NAMES_PATH
 
 # Get class names from COCO
-val_set = DatasetCOCO(COCO_ROOT, "val", IMG_SIZE, PATCH_SIZE)
+with open(CLASS_NAMES_PATH) as f:
+    class_names = [line.strip() for line in f]
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -41,7 +43,7 @@ dino_model = torch.hub.load(
 dino_backbone = DinoBackbone(dino_model, n_layers_dino).to(device)
 
 embed_dim = MODEL_TO_EMBED_DIM[DINO_MODEL]
-model_head = DinoFCOSHead(backbone_out_channels=embed_dim, fpn_channels=FPN_CH, num_classes=len(val_set.class_names)).to(device)
+model_head = DinoFCOSHead(backbone_out_channels=embed_dim, fpn_channels=FPN_CH, num_classes=len(class_names)).to(device)
 model_head.load_state_dict(torch.load(MODEL_PATH_INFERENCE))
 
 image = cv2.imread(IMG_INFERENCE_PATH)
@@ -63,6 +65,6 @@ with torch.no_grad():
     end = time.time()
     print("time per sample: ", (end-init)*1000/n_inference)
 
-plot_detections(image, boxes.cpu(), scores.cpu(), labels.cpu(), val_set.class_names)
+plot_detections(image, boxes.cpu(), scores.cpu(), labels.cpu(), class_names)
 print("End of inference")
 

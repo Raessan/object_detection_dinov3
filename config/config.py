@@ -49,7 +49,8 @@ MODEL_PATH_TRAIN_LOAD = '/home/rafa/deep_learning/projects/object_detection_dino
 RESULTS_PATH = '/home/rafa/deep_learning/projects/object_detection_dinov3/results' # Folder where the result will be saved
 
 # PARAMETERS FOR INFERENCE
-MODEL_PATH_INFERENCE = '/home/rafa/deep_learning/projects/object_detection_dinov3/results/2025-08-26_22-52-57/2025-08-27_20-28-53/model_13.pth' # Path of the model to perform inference
+MODEL_PATH_INFERENCE = '/home/rafa/deep_learning/projects/object_detection_dinov3/weights/model.pth' # Path of the model to perform inference
 IMG_INFERENCE_PATH = '/home/rafa/deep_learning/datasets/COCO/val2017/000000000139.jpg'
 SCORE_THRESH = 0.2
 NMS_THRESH = 0.6
+CLASS_NAMES_PATH = "/home/rafa/deep_learning/projects/object_detection_dinov3/src/class_names.txt"
