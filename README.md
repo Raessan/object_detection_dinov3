@@ -125,6 +125,8 @@ Additionally, we provide our chosen weights in `weights/model.pth`.
 
 Any modification or extension of this repository should maintain these files and remain self-contained, so that the head can be directly plugged into [dinov3_ros](https://github.com/Raessan/dinov3_ros) without additional dependencies.
 
+**Update**: To run with `dinov3_ros_tensorrt`, we created an onnx exporter inside `inference/export_model.py`. The resulting `.onnx` models are required instead of the `model_head.py` and `weights/model.pth` to run with TensorRT.
+
 
 ## Demo
 
