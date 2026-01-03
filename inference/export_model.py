@@ -67,7 +67,7 @@ def export_model():
         dummy_features,
         PATH_SAVE_HEAD_ONNX,
         input_names=["features"],
-        output_names=["boxes", "scores", "labels"],
+        output_names=["cls1", "cls2", "cls3", "reg1", "reg2", "reg3", "ctr1", "ctr2", "ctr3"],
         opset_version=17,
         do_constant_folding=True
     )

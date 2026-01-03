@@ -141,8 +141,7 @@ class FCOSHead(nn.Module):
 class DinoFCOSHead(nn.Module):
     """
     Wraps LightFPN + FCOSHead. Expects the backbone to provide a single spatial
-    feature map (B, C_backbone, Hf, Wf). This matches the DinoBackbone you
-    posted earlier.
+    feature map (B, C_backbone, Hf, Wf).
     """
     def __init__(self, backbone_out_channels: int = 768, fpn_channels: int = 192,
                  num_classes: int = 80, num_convs: int = 4):
